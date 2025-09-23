@@ -6,7 +6,7 @@ services:
       MYSQL_ROOT_PASSWORD: reddy045
       MYSQL_DATABASE: ems
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
@@ -27,17 +27,18 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ems
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: reddy045
-      SPRING_PROFILES_ACTIVE: dev 
+      SPRING_PROFILES_ACTIVE: prod
     depends_on:
       mysql:
         condition: service_healthy
     networks:
       - ems-network
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8083/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
+      start_period: 40s
 
   frontend:
     build:
@@ -52,10 +53,10 @@ services:
     networks:
       - ems-network
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
 
 volumes:
   mysql_data:
