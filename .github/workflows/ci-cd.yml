@@ -8,8 +8,8 @@ on:
 
 env:
   REGISTRY: docker.io
-  BACKEND_IMAGE: your-username/ems-backend
-  FRONTEND_IMAGE: your-username/ems-frontend
+  BACKEND_IMAGE: sathishreddy045/ems-backend
+  FRONTEND_IMAGE: sathishreddy045/ems-frontend
 
 jobs:
   test-backend:

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: your-registry/ems-backend:latest
+        image: sathishreddy045/ems-backend:latest
         ports:
         - containerPort: 8083
         env:

@@ -11,9 +11,10 @@ COPY src ./src
 
 RUN mvn clean package -DskipTests
 
+
 FROM eclipse-temurin:21-jre-alpine
 
-RUN apk add --no-cache wget bash
+RUN apk add --no-cache wget bash curl
 
 WORKDIR /app
 
