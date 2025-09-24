@@ -139,60 +139,19 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-  deploy:
-    needs: [build-and-push]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        version: 'latest'
-        
-    - name: Configure Kubernetes
-      run: |
-        mkdir -p $HOME/.kube
-        echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
-        
-    - name: Deploy to Kubernetes
-      run: |
-        echo "kubectl client version"
-        kubectl version --client
-
-        echo "Show a minimal view of kube config (for debugging)"
-        kubectl config view --minify --raw || true
-
-        echo "Check cluster reachability (may fail if kubeconfig points to local minikube)"
-        kubectl cluster-info || true
-
-        # Apply manifests without OpenAPI validation (this prevents the "failed to download openapi" error)
-        kubectl apply --validate=false -f k8s/namespace.yml
-        kubectl apply --validate=false -f k8s/mysql-deployment.yml
-        kubectl apply --validate=false -f k8s/backend-deployment.yml
-        kubectl apply --validate=false -f k8s/frontend-deployment.yml
-        kubectl apply --validate=false -f k8s/ingress.yml
-
-        # Wait for deployments (these will hang/fail if the cluster isn't reachable or image not found)
-        kubectl rollout status deployment/backend-deployment -n ems-system --timeout=300s
-        kubectl rollout status deployment/frontend-deployment -n ems-system --timeout=300s
-
   security-scan:
     runs-on: ubuntu-latest
     needs: [build-and-push]
     if: github.ref == 'refs/heads/main'
+
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
     
     steps:
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
         image-ref: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}:latest
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-
-    - name: Upload Trivy scan results
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: 'trivy-results.sarif'
+        format: 'table'
