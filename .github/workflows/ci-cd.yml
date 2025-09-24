@@ -157,13 +157,23 @@ jobs:
         
     - name: Deploy to Kubernetes
       run: |
-        kubectl apply -f k8s/namespace.yml
-        kubectl apply -f k8s/mysql-deployment.yml
-        kubectl apply -f k8s/backend-deployment.yml
-        kubectl apply -f k8s/frontend-deployment.yml
-        kubectl apply -f k8s/ingress.yml
-        
-        # Wait for deployments
+        echo "kubectl client version"
+        kubectl version --client
+
+        echo "Show a minimal view of kube config (for debugging)"
+        kubectl config view --minify --raw || true
+
+        echo "Check cluster reachability (may fail if kubeconfig points to local minikube)"
+        kubectl cluster-info || true
+
+        # Apply manifests without OpenAPI validation (this prevents the "failed to download openapi" error)
+        kubectl apply --validate=false -f k8s/namespace.yml
+        kubectl apply --validate=false -f k8s/mysql-deployment.yml
+        kubectl apply --validate=false -f k8s/backend-deployment.yml
+        kubectl apply --validate=false -f k8s/frontend-deployment.yml
+        kubectl apply --validate=false -f k8s/ingress.yml
+
+        # Wait for deployments (these will hang/fail if the cluster isn't reachable or image not found)
         kubectl rollout status deployment/backend-deployment -n ems-system --timeout=300s
         kubectl rollout status deployment/frontend-deployment -n ems-system --timeout=300s
 
