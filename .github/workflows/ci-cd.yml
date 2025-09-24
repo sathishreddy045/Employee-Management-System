@@ -5,7 +5,9 @@ on:
     branches: [ main, develop ]
   pull_request:
     branches: [ main ]
-
+permissions:
+  contents: read
+  security-events: write
 env:
   REGISTRY: docker.io
   BACKEND_IMAGE: sathishreddy045/ems-backend
