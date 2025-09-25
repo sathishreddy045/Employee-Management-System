@@ -16,6 +16,7 @@ spec:
       containers:
       - name: frontend
         image: sathishreddy045/ems-frontend:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 3000
         livenessProbe:
